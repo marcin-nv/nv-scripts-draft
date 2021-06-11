@@ -50,7 +50,7 @@ nHeader = 0
 # #  ===============================================================================
 
 
-datafolder = r'C:\Users\MarcinDolata\Documents\analysis_cycling\B2DOE\step2'
+datafolder = r'C:\Users\MarcinDolata\Documents\Davids cycling'
 
 #datafolder= r'C:/Users/MarioBecker/northvolt.com/Validation - Documents/07_Customer Validation/05. Porsche/03. Raw Data/02. B2DOE/B2DOE 6/01. Cycling/01. CSL/B2DOE-6 241-242'
 
@@ -87,15 +87,19 @@ for idx, file in enumerate(file_path):
     
     data, table = PNE.postproc_data(file,nHeader)
     # PNE.plotVIT(data)   # to plot the raw data
+    # fix - find a better way to insert input parameters
     Ah = 113
-    C_rate_cycling = 0.5
+    C_rate_cycling = 0.05
     
     idx_Ah = table[abs(table[('Current(A)','max')]).between(0.95*(C_rate_cycling*Ah),1.05*(C_rate_cycling*Ah))].index
 
     try:
-        cellID = re.search('B2DOE-5 (.+)', file).group(1).split()[0]
+        # fix - why are we introducing cell design name here? can't we extract it 
+        cellID = re.search('B1S2 (.+)', file).group(1).split()[0]
     except:
         cellID = 'XX'
+        # fix - print warning that desired cell name was not found in file name
+        print('Warning:\ncellID = \'XX\'\nProvided cellID not found in the file:\n\t' + file + '.\n\n')
         
     
 #%% =============================================================================
@@ -270,8 +274,8 @@ Sheetnm = ' Separated Cycling'
 worksheet=workbook.add_worksheet(Sheetnm)
 writer.sheets[Sheetnm] = worksheet
 for idx1 in range(len(rated_capa_results)):
-    Cha_cycles = rated_capa_results[idx1][1].loc[rated_capa_results[idx1][1]['C-rate'] == 0.5]
-    Dch_cycles = rated_capa_results[idx1][1].loc[rated_capa_results[idx1][1]['C-rate'] == -0.5]
+    Cha_cycles = rated_capa_results[idx1][1].loc[rated_capa_results[idx1][1]['C-rate'] == 0.2]
+    Dch_cycles = rated_capa_results[idx1][1].loc[rated_capa_results[idx1][1]['C-rate'] == -0.33]
     row       = 1+ (Cha_cycles.shape[0]+2)* idx1 #pyxl counts starts counting at 1,1 xlsxwriter at 0,0
     col       = 1
     Cha_cycles.to_excel(writer,sheet_name=Sheetnm, startrow=row , startcol=col, index_label = rated_capa_results[idx1][0])
