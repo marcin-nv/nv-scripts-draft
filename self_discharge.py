@@ -34,7 +34,6 @@ def get_SOC_from_OCV(ocv_search,OCV_DCH,OCV_CHA,mode):
         interpolation_OCV = interpolate.interp1d (OCV_DCH,SOC)
     elif mode == 2:
         interpolation_OCV = interpolate.interp1d (OCV_CHA,SOC)
-    #print(OCV_DCH)
     return interpolation_OCV(ocv_search)
 
 #_____________________________________________________________________________
@@ -55,8 +54,8 @@ del OCV_data['diff'], OCV_data['day']
 
 #_____________________________________________________________________________
 # compute SOC from OCV data
-SOC_results = pd.DataFrame()
-#SOC_results = pd.DataFrame(columns = [cell, ['OCV']*len(cell)])
+#SOC_results = pd.DataFrame()
+SOC_results = pd.DataFrame(columns = [cell, ['OCV']*len(cell)])
 for ind in range(len(cell)):
     if temp[ind] == 40:
         OCV_DCH = [4.175,4.111,4.084,3.992,3.902,3.815,3.699,3.632,3.583,3.505,3.392,3.350,3.216]
@@ -77,7 +76,7 @@ file_name               = datafolder + '/SOC_results_self-discharge_draft.xlsx'
     
 writer = pd.ExcelWriter(file_name,engine='xlsxwriter')
 workbook=writer.book
-# # Comparison sheet 
+
 Sheetnm = 'SOC_results'
 worksheet=workbook.add_worksheet(Sheetnm)
 writer.sheets[Sheetnm] = worksheet
@@ -85,9 +84,6 @@ writer.sheets[Sheetnm] = worksheet
 SOC_results.to_excel(writer,sheet_name=Sheetnm, startrow=0 , startcol=0,
 #                     index_label = rated_capa_results[idx1][0]
                      )
-
-   
-
 
 writer.save()
 
