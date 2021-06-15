@@ -54,7 +54,7 @@ file_path = [os.path.join(root, name) #filter the raw files in a list
              if name.endswith((".xlsx")) and 'ocv' in name.lower()]
 
 file_path = sorted(file_path)
-OCV_data = pd.read_excel(file_path[0], skiprows=2)
+OCV_data = pd.read_excel(file_path[0], skiprows=3)
 
 #_____________________________________________________________________________
 # create dataframe for results
