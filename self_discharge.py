@@ -8,6 +8,9 @@ Created on Mon Jun 14 13:12:59 2021
 import time
 import os
 from scipy import interpolate
+#to call interp1d
+#from scipy.interpolate import interp1d
+#if abo
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -18,10 +21,10 @@ cell = ['80-81', '82-83', '84-85', '86-87', '90-91', '92-93', '235-236', '259-26
 temp = [40, 40, 40, 40, 40, 40, 40, 40, 40, 25, 25, 25]
 
 #_____________________________________________________________________________
-# OCV to SOC function definition (based on)
+# OCV to SOC function definition (based on Simon's function)
 
 def get_SOC_from_OCV(ocv_search,ind,mode):
-    
+    print(OCV_data[cell[ind]])
     SOC = [100, 95, 90, 80, 70, 60, 50, 40, 30, 20, 10, 5, 0]
     if temp[ind] == 40:
         OCV_DCH = [4.175,4.111,4.084,3.992,3.902,3.815,3.699,3.632,3.583,3.505,3.392,3.350,3.216]
@@ -51,10 +54,11 @@ datafolder = r'C:\Users\MarcinDolata\Documents'
 file_path = [os.path.join(root, name) #filter the raw files in a list
              for root, dirs, files in os.walk(datafolder)
              for name in files
-             if name.endswith((".xlsx")) and 'ocv' in name.lower()]
+             if name.endswith((".xlsx")) and 'proposal' in name.lower()]
 
 file_path = sorted(file_path)
-OCV_data = pd.read_excel(file_path[0], skiprows=3)
+OCV_data = pd.read_excel(file_path[0], sheet_name=0, skiprows=3) #horizontal layout (original proposal)
+# OCV_data = pd.read_excel(file_path[0], sheet_name=1, skiprows=0) #verlical layout (reviewed by Camille)
 
 #_____________________________________________________________________________
 # create dataframe for results
