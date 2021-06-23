@@ -13,16 +13,9 @@ import os
 import functions
 import pandas as pd
 import numpy as np
-#import datetime
-#from datetime import date, datetime
-#import openpyxl as xl
-#import xlsxwriter
-#import matplotlib
-#import matplotlib.pyplot as plt
-#import numpy as np
 from pathlib import Path
 
-#%%
+#%% read
 
 #datafolder = r'C:\Users\MarcinDolata\Documents\analysis_cycling\B2DOE\step2'
 
@@ -64,28 +57,23 @@ for idx, file in enumerate(file_path):
     cellIDs.append(parsed_file_name[1])
     cy.append(cy_new)
     cy_beg.append(cy_beg_new)
-# RPT check - if RPT in
-
+    
+# RPT check - if RPT in the file name
     if 'rpt' in file.lower(): RPT = True
     else: RPT = False
 
 # Exception - interrupted test - RPT in file name but not done
     if '200-239' in file.lower(): RPT = False
-# End of exception
 
-    # print('RPT: ',RPT)
+# Read raw file
     data, capa_ord_idx = functions.load_data(file,nHeader,RPT)
+    
     capa_sep_idx = pd.pivot_table(capa_ord_idx, values='Capacity(Ah)', index=["Total Cycle"], columns=["Type"])
     capa_sep_idx['File'] = cy_new
     capa_ord.append([pd.DataFrame([cellID]),capa_ord_idx])
     capa_sep.append([pd.DataFrame([cellID]),capa_sep_idx])
-    
-# capa_sep_all = pd.DataFrame(columns=[
-#                             capa_sep[0][1].index.name,
-#                             capa_sep[0][1].columns.values[0],
-#                             capa_sep[0][1].columns.values[1],
-#                             ])
 
+# Create one dataframe to store all the cycles
 capa_sep_all = capa_sep[0][1]
 for file_idx in range (1,len(capa_sep)):
     capa_sep_all = capa_sep_all.append(capa_sep[file_idx][1], ignore_index = True)
@@ -93,7 +81,7 @@ capa_sep_all.index = np.arange(1,len(capa_sep_all)+1)
 
 # Replace partial SOC capacity values with zeros
 for ind in capa_sep_all:
-    capa_sep_all.loc[capa_sep_all.Charge < 60, "Charge"] = None
+    capa_sep_all.loc[capa_sep_all.Charge < 70, "Charge"] = None
     
 # Add cycle number column
 capa_sep_all['Cycle'] = np.arange(1,len(capa_sep_all)+1)
@@ -105,6 +93,7 @@ capa_sep_all['Dch capa ret (%)'] = capa_sep_all['Discharge'] / ref_dch_capa
 capa_sep_all['Efficiency'] = capa_sep_all['Discharge'] / capa_sep_all['Charge']
 capa_sep_all = capa_sep_all.reindex(columns = ['File', 'Cycle', 'Charge', 'Cha capa ret (%)', 'Discharge', 'Dch capa ret (%)', 'Efficiency'])
 capa_sep_all.index.name = cellID
+
 #%% Save to excel
 
 Path(datafolder + '/Output_step/').mkdir(exist_ok=True) # create folder in datafolder
@@ -114,21 +103,6 @@ file_name               = datafolder + '/Output_step/output_sheet_' + cellID + '
 writer = pd.ExcelWriter(file_name,engine='xlsxwriter')
 workbook = writer.book
 
-
-# # Capacity sheet 
-# Sheetnm = 'Summary in correct order'
-# worksheet = workbook.add_worksheet(Sheetnm)
-# writer.sheets[Sheetnm] = worksheet
-
-# for idx1 in range(len(capa_ord)):
-#     capa_ord[idx1][1].to_excel(writer,sheet_name=Sheetnm, startrow=0, startcol=0)
-
-# Sheetnm = 'Charge vs Discharge'
-# worksheet = workbook.add_worksheet(Sheetnm)
-# writer.sheets[Sheetnm] = worksheet
-
-# for idx1 in range(len(capa_ord)):
-#     capa_sep[idx1][1].to_excel(writer,sheet_name=Sheetnm, startrow=0, startcol=0)
 
 Sheetnm = 'Charge vs Discharge all'
 worksheet = workbook.add_worksheet(Sheetnm)
