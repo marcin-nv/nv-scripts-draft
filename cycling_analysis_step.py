@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Jun  7 16:32:42 2021
+Created on Tue Jun 22 10:00:00 2021
 
 @author: MarcinDolata
 """
@@ -10,14 +10,29 @@ from tkinter import filedialog
 import time
 import re
 import os
-import functions
 import pandas as pd
 import numpy as np
 from pathlib import Path
 
-#%% read
 
-#datafolder = r'C:\Users\MarcinDolata\Documents\analysis_cycling\B2DOE\step2'
+#%% Configuration variables
+
+cell = 'B2DOE-0'
+temperature = 45
+
+#%% Functions definition
+
+def load_step_data(fileName, nHeaderLines, RPT_check):
+    
+    data = pd.read_csv(fileName, skiprows=nHeaderLines)
+    table = pd.pivot_table(data, values=['Capacity(Ah)'], index=['Type', 'Total Cycle']).drop('Rest')
+    table = table.sort_values(['Total Cycle', 'Type'], ascending=[True, True])
+    if RPT_check == True:
+        table = table.iloc[:-5]
+    
+    return (data, table)
+
+#%% Choose data folder directory
 
 root= tk.Tk()
 root.withdraw()
@@ -31,13 +46,12 @@ print(f'Analizing files in: {datafolder}')
 file_path = [os.path.join(root, name) #filter 'STEP' raw files
              for root, dirs, files in os.walk(datafolder)
              for name in files
-             if name.endswith((".csv")) and 'step' in name.lower() and 't45' in name.lower() ]
+             if name.endswith((".csv")) and 'step' in name.lower() and 't' + str(temperature) in name.lower() ]
 
 file_path = sorted(file_path)
 
 #%% Cycling Capacity
-cell = 'B2DOE-0'
-nHeader = 0
+
 capa_sep = []
 capa_ord = []
 cellIDs = []
@@ -66,7 +80,7 @@ for idx, file in enumerate(file_path):
     if '200-239' in file.lower(): RPT = False
 
 # Read raw file
-    data, capa_ord_idx = functions.load_data(file,nHeader,RPT)
+    data, capa_ord_idx = load_step_data(file,0,RPT)
     
     capa_sep_idx = pd.pivot_table(capa_ord_idx, values='Capacity(Ah)', index=["Total Cycle"], columns=["Type"])
     capa_sep_idx['File'] = cy_new
@@ -88,16 +102,16 @@ capa_sep_all['Cycle'] = np.arange(1,len(capa_sep_all)+1)
 
 ref_dch_capa = capa_sep_all['Discharge'][1]
 ref_cha_capa = capa_sep_all['Charge'][2]
-capa_sep_all['Cha capa ret (%)'] = capa_sep_all['Charge'] / ref_cha_capa
-capa_sep_all['Dch capa ret (%)'] = capa_sep_all['Discharge'] / ref_dch_capa
+capa_sep_all['Charge (%)'] = capa_sep_all['Charge'] / ref_cha_capa
+capa_sep_all['Discharge (%)'] = capa_sep_all['Discharge'] / ref_dch_capa
 capa_sep_all['Efficiency'] = capa_sep_all['Discharge'] / capa_sep_all['Charge']
-capa_sep_all = capa_sep_all.reindex(columns = ['File', 'Cycle', 'Charge', 'Cha capa ret (%)', 'Discharge', 'Dch capa ret (%)', 'Efficiency'])
+capa_sep_all = capa_sep_all.reindex(columns = ['File', 'Cycle', 'Charge', 'Charge (%)', 'Discharge', 'Discharge (%)', 'Efficiency'])
 capa_sep_all.index.name = cellID
 
 #%% Save to excel
 
 Path(datafolder + '/Output_step/').mkdir(exist_ok=True) # create folder in datafolder
-file_name               = datafolder + '/Output_step/output_sheet_' + cellID + '.xlsx'
+file_name               = datafolder + '/Output_step/output_' + cell + '_' + cellID + '.xlsx'
 
  
 writer = pd.ExcelWriter(file_name,engine='xlsxwriter')
