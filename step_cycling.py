@@ -104,10 +104,11 @@ capa_sep_all['Cha capa ret (%)'] = capa_sep_all['Charge'] / ref_cha_capa
 capa_sep_all['Dch capa ret (%)'] = capa_sep_all['Discharge'] / ref_dch_capa
 capa_sep_all['Efficiency'] = capa_sep_all['Discharge'] / capa_sep_all['Charge']
 capa_sep_all = capa_sep_all.reindex(columns = ['File', 'Cycle', 'Charge', 'Cha capa ret (%)', 'Discharge', 'Dch capa ret (%)', 'Efficiency'])
+capa_sep_all.index.name = cellID
 #%% Save to excel
 
 Path(datafolder + '/Output_step/').mkdir(exist_ok=True) # create folder in datafolder
-file_name               = datafolder + '/Output_step/output_sheet_'+cellID+'.xlsx'
+file_name               = datafolder + '/Output_step/output_sheet_' + cellID + '.xlsx'
 
  
 writer = pd.ExcelWriter(file_name,engine='xlsxwriter')
